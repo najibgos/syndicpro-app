@@ -1,0 +1,17 @@
+{
+  "name": "SyndicPro - Gestion de Copropriété",
+  "short_name": "SyndicPro",
+  "description": "Application de gestion d'immeuble pour les syndics et propriétaires",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2563eb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/syndic-logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

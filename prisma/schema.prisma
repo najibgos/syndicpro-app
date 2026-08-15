@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  password     String
+  role         String    @default("OWNER") // ADMIN or OWNER
+  isActive     Boolean   @default(false)
+  phone        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  apartment    Apartment?
+  notifications Notification[]
+}
+
+model Building {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  city        String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  apartments  Apartment[]
+  expenses    Expense[]
+  cleaningFees CleaningFee[]
+}
+
+model Apartment {
+  id           String   @id @default(cuid())
+  number       Int
+  buildingId   String
+  ownerName    String
+  monthlyFee   Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  building     Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  owner        User?    @relation(fields: [userId], references: [id])
+  userId       String?  @unique
+  cotisations  Cotisation[]
+
+  @@unique([number, buildingId])
+}
+
+model Cotisation {
+  id          String   @id @default(cuid())
+  apartmentId String
+  month       Int      // 1-12
+  year        Int
+  amount      Float
+  isPaid      Boolean  @default(false)
+  validatedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  apartment   Apartment @relation(fields: [apartmentId], references: [id], onDelete: Cascade)
+
+  @@unique([apartmentId, month, year])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  buildingId  String
+  month       Int      // 1-12
+  year        Int
+  amount      Float
+  description String
+  category    String   @default("AUTRE") // MENAGE, SANITAIRE, MAINTENANCE, AUTRE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+}
+
+model CleaningFee {
+  id          String   @id @default(cuid())
+  buildingId  String
+  month       Int
+  year        Int
+  amount      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+
+  @@unique([buildingId, month, year])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO") // INFO, COTISATION, EXPENSE, ACCOUNT
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Year {
+  id        String   @id @default(cuid())
+  value     Int      @unique
+  createdAt DateTime @default(now())
+}
